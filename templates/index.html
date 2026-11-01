@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج فرحات للأذكار</title>
+    <!-- سطر ربط ملف الـ Manifest لتثبيت التطبيق على الموبايل -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #f4f9f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c7a51;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            background-color: #e2f0ea;
+            color: #2c7a51;
+            border: 1px solid #2c7a51;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background-color: #2c7a51;
+            color: white;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .category-tag {
+            font-size: 13px;
+            color: #2c7a51;
+            background-color: #e2f0ea;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .text {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button.action-btn {
+            background-color: #2c7a51;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.action-btn:hover {
+            background-color: #235f3f;
+        }
+        .reset-btn {
+            background-color: #e06d6d;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>برنامج فرحات للأذكار</h1>
+        <div class="subtitle">حصن المسلم اليومي</div>
+        
+        <div class="filter-container">
+            <button class="filter-btn active" onclick="filterCategory('الكل', this)">الكل</button>
+            {% for cat in categories %}
+            <button class="filter-btn" onclick="filterCategory('{{ cat }}', this)">{{ cat }}</button>
+            {% endfor %}
+        </div>
+
+        <div id="azkar-list">
+            {% for zikr in azkar %}
+            <div class="card azkar-item" data-category="{{ zikr.category }}">
+                <div class="category-tag">{{ zikr.category }}</div>
+                <div class="text">{{ zikr.text }}</div>
+                <div class="btn-group">
+                    <button id="btn-{{ zikr.id }}" class="action-btn" onclick="incrementCounter({{ zikr.id }}, {{ zikr.count }})">
+                        العد: <span id="count-{{ zikr.id }}">0</span> / {{ zikr.count }}
+                    </button>
+                    <button class="action-btn reset-btn" onclick="resetCounter({{ zikr.id }}, {{ zikr.count }})">إعادة</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        const counters = {};
+
+        function incrementCounter(id, maxCount) {
+            if (!counters[id]) {
+                counters[id] = 0;
+            }
+            
+            if (counters[id] < maxCount) {
+                counters[id]++;
+                document.getElementById(`count-${id}`).innerText = counters[id];
+                
+                if (counters[id] === maxCount) {
+                    const btn = document.getElementById(`btn-${id}`);
+                    btn.innerHTML = `تم الذكر ✓ (<span id="count-${id}">${maxCount}</span> / ${maxCount})`;
+                    btn.style.backgroundColor = "#8c8c8c";
+                }
+            }
+        }
+
+        function resetCounter(id, maxCount) {
+            counters[id] = 0;
+            const btn = document.getElementById(`btn-${id}`);
+            btn.style.backgroundColor = "#2c7a51";
+            btn.innerHTML = `العد: <span id="count-${id}">0</span> / ${maxCount}`;
+        }
+
+        function filterCategory(category, element) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+
+            const items = document.querySelectorAll('.azkar-item');
+            items.forEach(item => {
+                if (category === 'الكل' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
